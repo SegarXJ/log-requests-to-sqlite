@@ -114,10 +114,12 @@ class ActivityLogger implements IExtensionStateListener {
             stmt.setString(2, reqInfo.getUrl().toString());
             stmt.setString(3, reqInfo.getMethod());
             stmt.setString(4, callbacks.getToolName(toolFlag));
-            stmt.setString(5, callbacks.getHelpers().bytesToString(reqContent));
+            //请求
+            stmt.setString(5, new String(reqContent,"utf-8"));
             stmt.setString(6, LocalDateTime.now().format(this.datetimeFormatter));
             stmt.setString(7, statusCode);
-            stmt.setString(8, (resContent != null) ? callbacks.getHelpers().bytesToString(resContent) : EMPTY_RESPONSE_CONTENT);
+            //响应
+            stmt.setString(8, (resContent != null) ? new String(resContent,"utf-8") : EMPTY_RESPONSE_CONTENT);
             int count = stmt.executeUpdate();
             if (count != 1) {
                 this.trace.writeLog("Request was not inserted, no detail available (insertion counter = " + count + ") !");
