@@ -1,6 +1,7 @@
 package burp;
 
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,8 +19,8 @@ class ActivityLogger implements IExtensionStateListener {
     /**
      * SQL instructions.
      */
-    private static final String SQL_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS ACTIVITY (LOCAL_SOURCE_IP TEXT, TARGET_URL TEXT, HTTP_METHOD TEXT, BURP_TOOL TEXT, REQUEST_RAW TEXT, SEND_DATETIME TEXT, HTTP_STATUS_CODE TEXT, RESPONSE_RAW TEXT)";
-    private static final String SQL_TABLE_INSERT = "INSERT INTO ACTIVITY (LOCAL_SOURCE_IP,TARGET_URL,HTTP_METHOD,BURP_TOOL,REQUEST_RAW,SEND_DATETIME,HTTP_STATUS_CODE,RESPONSE_RAW) VALUES(?,?,?,?,?,?,?,?)";
+    private static final String SQL_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS ACTIVITY (LOCAL_SOURCE_IP TEXT, HTTP_METHOD TEXT,TARGET_URL TEXT,  BURP_TOOL TEXT, REQUEST_RAW TEXT, SEND_DATETIME TEXT, HTTP_STATUS_CODE TEXT, RESPONSE_RAW TEXT)";
+    private static final String SQL_TABLE_INSERT = "INSERT INTO ACTIVITY (LOCAL_SOURCE_IP,HTTP_METHOD,TARGET_URL,BURP_TOOL,REQUEST_RAW,SEND_DATETIME,HTTP_STATUS_CODE,RESPONSE_RAW) VALUES(?,?,?,?,?,?,?,?)";
     private static final String SQL_COUNT_RECORDS = "SELECT COUNT(HTTP_METHOD) FROM ACTIVITY";
     private static final String SQL_TOTAL_AMOUNT_DATA_SENT = "SELECT TOTAL(LENGTH(REQUEST_RAW)) FROM ACTIVITY";
     private static final String SQL_BIGGEST_REQUEST_AMOUNT_DATA_SENT = "SELECT MAX(LENGTH(REQUEST_RAW)) FROM ACTIVITY";
@@ -111,15 +112,16 @@ class ActivityLogger implements IExtensionStateListener {
         //Insert the event into the storage
         try (PreparedStatement stmt = this.storageConnection.prepareStatement(SQL_TABLE_INSERT)) {
             stmt.setString(1, InetAddress.getLocalHost().getHostAddress());
-            stmt.setString(2, reqInfo.getUrl().toString());
-            stmt.setString(3, reqInfo.getMethod());
+            stmt.setString(2, reqInfo.getMethod());
+            stmt.setString(3, reqInfo.getUrl().toString());
+
             stmt.setString(4, callbacks.getToolName(toolFlag));
             //请求
-            stmt.setString(5, new String(reqContent,"utf-8"));
+            stmt.setString(5, new String(reqContent, StandardCharsets.UTF_8));
             stmt.setString(6, LocalDateTime.now().format(this.datetimeFormatter));
             stmt.setString(7, statusCode);
             //响应
-            stmt.setString(8, (resContent != null) ? new String(resContent,"utf-8") : EMPTY_RESPONSE_CONTENT);
+            stmt.setString(8, (resContent != null) ? new String(resContent, StandardCharsets.UTF_8) : EMPTY_RESPONSE_CONTENT);
             int count = stmt.executeUpdate();
             if (count != 1) {
                 this.trace.writeLog("Request was not inserted, no detail available (insertion counter = " + count + ") !");
