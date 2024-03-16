@@ -1,6 +1,6 @@
 buildscript {
     ext{
-        odcPluginVersion = project.hasProperty('odcGradlePluginVersion') ? project.getProperty('odcGradlePluginVersion') : '7.4.4'
+        odcPluginVersion = project.hasProperty('odcGradlePluginVersion') ? project.getProperty('odcGradlePluginVersion') : '9.0.9'
     }
     repositories {
         mavenCentral()
@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.xerial:sqlite-jdbc:3.42.0.0'
+    compile 'org.xerial:sqlite-jdbc:3.45.2.0'
     compile 'net.portswigger.burp.extender:burp-extender-api:2.3'
 }
 
